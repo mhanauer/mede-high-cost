@@ -53,7 +53,7 @@ df['predicted_high_cost_level'] = df.apply(adjust_prediction, axis=1)
 df['predicted_high_cost_level'] = df['predicted_high_cost_level'].round(2)
 
 # Streamlit application
-st.title('Healthcare Data Analysis')
+st.title('High Cost Claimants')
 
 # Select chronic condition
 chronic_condition = st.selectbox('Select Chronic Condition', options=chronic_conditions)
