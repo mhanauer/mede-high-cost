@@ -55,6 +55,19 @@ df['predicted_high_cost_level'] = df['predicted_high_cost_level'].round(2)
 # Streamlit application
 st.title('High Cost Claimants')
 
+st.markdown("""
+Below is high cost clamaint prediction demo. We predict the probability of a being a high cost claimant (e.g., higiher allowed PMPM relative to their peers). We created four categories to help users identify which members are impactable:
+
+Impactable high cost claimant: Currently high cost claimant; however, predicted to drop in the future. Users should target these members as they are likely to have lower costs in the future.
+
+Unavoidable high cost claimant: Members who are currently high cost and predicted to stay high cost. These are members users may want to consider ignoring since there is little opportunity for improvement.
+
+Future high cost claimants: Members who current low cost; however, are predicted to become high cost. Users may want to target these members as they could become high cost claimants in the future.
+
+Stable low cost members: Members with current low costs and predicted to stay low. No intervention with these members is likely necessary.
+""")
+
+
 # Select chronic condition
 chronic_condition = st.selectbox('Select Chronic Condition', options=chronic_conditions)
 
