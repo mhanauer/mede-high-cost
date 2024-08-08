@@ -74,7 +74,7 @@ high_cost_categories = [
 high_cost_category = st.selectbox('Select High Cost Category', options=high_cost_categories)
 
 # Filter the dataframe based on selections
-filtered_df = df[(df['chronic_condition'] == chronic_condition) & (df['claimant_category'] == high_cost_category)]
+filtered_df = df[(df['chronic_condition'] == chronic_condition) & (df['claimant_category'] == high_cost_category)].round(2)
 
 # Display the filtered dataframe
 st.dataframe(filtered_df)
