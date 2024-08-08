@@ -29,11 +29,9 @@ df['current_high_cost_claimant'] = df['allowed_pmpm'] > high_cost_threshold
 
 # Define criteria for categorizing claimants
 def categorize_claimant(row):
-    if row['allowed_pmpm'] > 3000 and not row['current_high_cost_claimant']:
-        return 'Impactable high cost claimant'
-    elif row['allowed_pmpm'] > 2000 and row['current_high_cost_claimant']:
-        return 'Unavoidable high cost claimant'
-    elif row['allowed_pmpm'] > 1000:
+    if row['current_high_cost_claimant']:
+        return 'Impactable high cost claimant' if row['allowed_pmpm'] < high_cost_threshold else 'Unavoidable high cost claimant'
+    elif row['allowed_pmpm'] > high_cost_threshold:
         return 'Future high cost claimant'
     else:
         return 'Stable low cost claimant'
@@ -66,13 +64,13 @@ Below is a high-cost claimant prediction demo. We predict the probability of bei
 
 Current high-cost claimant: Members who are in the 75th percentile or above for allowed PMPM. These members are considered high-cost based on current data.
 
-Impactable high-cost claimant: Currently, the high-cost claimant is predicted to drop in the future (the probability of remaining a high-cost claimant is between 60% and 30%). Users should target these members as they are likely to have lower costs in the future.
+Impactable high cost claimant: Currently high-cost and predicted to drop in the future (the probability of remaining a high-cost claimant is between 30% and 60%). Users should target these members as they are likely to have lower costs in the future.
 
-Unavoidable high-cost claimant: Members who are currently high-cost and predicted to stay high-cost (the probability of remaining a high-cost claimant is between 60% and 30%). Users may want to consider ignoring these members since there is little opportunity for improvement.
+Unavoidable high cost claimant: Currently high-cost and predicted to stay high-cost (the probability of remaining a high-cost claimant is between 70% and 100%). Users may want to consider ignoring these members since there is little opportunity for improvement.
 
-Future high-cost claimants: Members who are currently low-cost are predicted to become high-cost in the future. Users may want to target these members as they could become high-cost claimants.
+Future high cost claimants: Currently low-cost but predicted to become high-cost in the future. Users may want to target these members as they could become high-cost claimants.
 
-Stable low-cost members: Members with current low costs are predicted to stay low. No intervention with these members is likely necessary.
+Stable low cost members: Currently low-cost and predicted to stay low. No intervention with these members is likely necessary.
 
 """)
 
