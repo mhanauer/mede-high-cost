@@ -21,11 +21,17 @@ chronic_conditions = [
 # Assign real chronic condition names to the dataframe
 df['chronic_condition'] = np.random.choice(chronic_conditions, 100)
 
+# Calculate the 75th percentile for allowed_pmpm
+high_cost_threshold = np.percentile(df['allowed_pmpm'], 75)
+
+# Add a column for current high cost claimant based on the 75th percentile
+df['current_high_cost_claimant'] = df['allowed_pmpm'] > high_cost_threshold
+
 # Define criteria for categorizing claimants
 def categorize_claimant(row):
-    if row['allowed_pmpm'] > 3000:
+    if row['allowed_pmpm'] > 3000 and not row['current_high_cost_claimant']:
         return 'Impactable high cost claimant'
-    elif row['allowed_pmpm'] > 2000:
+    elif row['allowed_pmpm'] > 2000 and row['current_high_cost_claimant']:
         return 'Unavoidable high cost claimant'
     elif row['allowed_pmpm'] > 1000:
         return 'Future high cost claimant'
@@ -56,17 +62,19 @@ df['predicted_high_cost_level'] = df['predicted_high_cost_level'].round(2)
 st.title('High Cost Claimants')
 
 st.markdown("""
-Below is high cost clamaint prediction demo. We predict the probability of a being a high cost claimant (e.g., higiher allowed PMPM relative to their peers). We created four categories to help users identify which members are impactable:
+Below is a high-cost claimant prediction demo. We predict the probability of being a high-cost claimant (e.g., higher allowed PMPM relative to their peers). We created four categories to help users identify which members are impactable:
 
-Impactable high cost claimant: Currently high cost claimant; however, predicted to drop in the future. Users should target these members as they are likely to have lower costs in the future.
+Current high-cost claimant: Members who are in the 75th percentile or above for allowed PMPM. These members are considered high-cost based on current data.
 
-Unavoidable high cost claimant: Members who are currently high cost and predicted to stay high cost. These are members users may want to consider ignoring since there is little opportunity for improvement.
+Impactable high-cost claimant: Currently, the high-cost claimant is predicted to drop in the future (the probability of remaining a high-cost claimant is between 60% and 30%). Users should target these members as they are likely to have lower costs in the future.
 
-Future high cost claimants: Members who current low cost; however, are predicted to become high cost. Users may want to target these members as they could become high cost claimants in the future.
+Unavoidable high-cost claimant: Members who are currently high-cost and predicted to stay high-cost (the probability of remaining a high-cost claimant is between 60% and 30%). Users may want to consider ignoring these members since there is little opportunity for improvement.
 
-Stable low cost members: Members with current low costs and predicted to stay low. No intervention with these members is likely necessary.
+Future high-cost claimants: Members who are currently low-cost are predicted to become high-cost in the future. Users may want to target these members as they could become high-cost claimants.
+
+Stable low-cost members: Members with current low costs are predicted to stay low. No intervention with these members is likely necessary.
+
 """)
-
 
 # Select chronic condition
 chronic_condition = st.selectbox('Select Chronic Condition', options=chronic_conditions)
