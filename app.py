@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
+# Set a seed for reproducibility
+np.random.seed(42)
+
 # Generate a dataframe with the required columns
 data = {
     'member_id': range(1, 101),
@@ -28,8 +31,16 @@ high_cost_threshold = np.percentile(df['allowed_pmpm'], 75)
 df['current_high_cost_claimant'] = df['allowed_pmpm'] > high_cost_threshold
 
 # Add a column for predicted high cost level
-np.random.seed(42)  # For reproducibility
 df['predicted_high_cost_level'] = np.random.uniform(0, 1, size=100)
+
+# Ensure representation in all categories
+# Manually set values for some rows to guarantee all categories
+df.loc[0:10, 'current_high_cost_claimant'] = True
+df.loc[0:5, 'predicted_high_cost_level'] = 0.6  # Wait and see high cost
+df.loc[6:10, 'predicted_high_cost_level'] = 0.8  # Unavoidable high cost
+df.loc[11:20, 'current_high_cost_claimant'] = False
+df.loc[11:15, 'predicted_high_cost_level'] = 0.8  # Impactable high cost
+df.loc[16:20, 'predicted_high_cost_level'] = 0.6  # Stable low cost
 
 # Define criteria for categorizing claimants
 def categorize_claimant(row):
@@ -51,11 +62,10 @@ st.title('High Cost Claimants')
 st.markdown("""
 Below is a high-cost claimant prediction demo. We predict the probability of being a high-cost claimant (e.g., higher allowed PMPM relative to their peers). We created categories to help users identify which members are impactable:
 
-- **Current high-cost claimant**: Members who are in the 75th percentile or above for allowed PMPM. These members are considered high-cost based on current data.
-- **Wait and see high cost claimant**: Currently high-cost and predicted to drop in the future (prediction value is at or above the 70th percentile). Users can leave these members alone as they are likely to get better on their own.
-- **Recurring high cost claimant**: Currently high-cost and predicted to stay high-cost (member predicted to be between 70th and 100th percentile of predicted costs). Users may target these members for case management or "laser" them in stop loss.
-- **Impactable high cost claimants**: Currently low-cost but predicted to become high-cost in the future (ember predicted to be between 70th and 100th percentile of predicted costs). Users may want to target these members as they could become high-cost claimants.
-- **Stable low cost members**: Currently low-cost and predicted to stay low (member predicted to be in lower than 70% percent of all members). No intervention with these members is likely necessary.
+- **Wait and see high cost claimant**: Currently high-cost and predicted to drop in the future (prediction value is below the 70th percentile). Users can leave these members alone as they are likely to get better on their own.
+- **Unavoidable high cost claimant**: Currently high-cost and predicted to stay high-cost (prediction value is at or above the 70th percentile). Users may target these members for case management or "laser" them in stop loss.
+- **Impactable high cost claimants**: Currently low-cost but predicted to become high-cost in the future (prediction value is at or above the 70th percentile). Users may want to target these members as they could become high-cost claimants.
+- **Stable low cost members**: Currently low-cost and predicted to stay low (prediction value is below the 70th percentile). No intervention with these members is likely necessary.
 """)
 
 # Select chronic condition
@@ -63,7 +73,7 @@ chronic_condition = st.selectbox('Select Chronic Condition', options=chronic_con
 
 # Select high cost category
 high_cost_categories = [
-    'Wait and see high cost', 'Unavoidable high cost claimant', 
+    'Wait and see high cost claimant', 'Unavoidable high cost claimant', 
     'Impactable high cost claimant', 'Stable low cost claimant'
 ]
 high_cost_category = st.selectbox('Select High Cost Category', options=high_cost_categories)
