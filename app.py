@@ -10,8 +10,7 @@ data = {
     'member_id': range(1, 101),
     'age': np.random.randint(18, 85, size=100),
     'gender': np.random.choice(['Male', 'Female'], 100),
-        # Adjusted range to center around 10,000
-    'allowed_pmpm': np.random.uniform(5000, 15000, size=100)
+    'allowed_pmpm': np.random.uniform(5000, 15000, size=100)  # Adjusted range to center around 10,000
 }
 
 df = pd.DataFrame(data)
@@ -85,15 +84,15 @@ df['predicted_high_cost_claimant'] = df['predicted_allowed_dollars'] > allowed_d
 st.markdown(f"""
 Below is a high-cost claimant prediction demo. We predict the allowed dollars for each member. We created categories to help users identify which members are impactable:
 
-- **Wait and See high cost claimant**: Currently high-cost (allowed dollars greater than **{allowed_dollars_threshold:,.0f}**) and predicted to drop in the future (predicted allowed dollars is less than or equal to **{allowed_dollars_threshold:,.0f}**). Users can leave these members alone as they are likely to get better on their own.
+- **Wait and See high cost claimant**: Currently high-cost (allowed dollars greater than **{allowed_dollars_threshold:,.0f}**) and predicted to drop in the future (predicted allowed dollars less than or equal to **{allowed_dollars_threshold:,.0f}**). Users can leave these members alone as they are likely to get better on their own.
 
-- **Unavoidable high cost claimant**: Currently high-cost (allowed dollars greater than **{allowed_dollars_threshold:,.0f}**) and predicted to stay high-cost (predicted allowed dollars is greater than **{allowed_dollars_threshold:,.0f}**). Users may target these members for case management or "laser" them in stop loss.
+- **Unavoidable high cost claimant**: Currently high-cost (allowed dollars greater than **{allowed_dollars_threshold:,.0f}**) and predicted to stay high-cost (predicted allowed dollars greater than **{allowed_dollars_threshold:,.0f}**). Users may target these members for case management or "laser" them in stop loss.
 
-- **Impactable high cost claimant**: Currently low-cost (allowed dollars less than or equal to **{allowed_dollars_threshold:,.0f}**) but predicted to become high-cost in the future (predicted allowed dollars is greater than **{allowed_dollars_threshold:,.0f}**). Users may want to target these members as they could become high-cost claimants.
+- **Impactable high cost claimant**: Currently low-cost (allowed dollars less than or equal to **{allowed_dollars_threshold:,.0f}**) but predicted to become high-cost in the future (predicted allowed dollars greater than **{allowed_dollars_threshold:,.0f}**). Users may want to target these members as they could become high-cost claimants.
 
-- **Stable moderate cost member**: Currently moderate-cost (allowed dollars between **{half_threshold:,.0f}** and **{allowed_dollars_threshold:,.0f}**) and predicted to stay moderate (predicted allowed dollars are between **{half_threshold:,.0f}** and **{allowed_dollars_threshold:,.0f}**). It is possible intervention may be needed.
+- **Stable moderate cost member**: Currently moderate-cost (allowed dollars between **{half_threshold:,.0f}** and **{allowed_dollars_threshold:,.0f}**) and predicted to stay moderate (predicted allowed dollars between **{half_threshold:,.0f}** and **{allowed_dollars_threshold:,.0f}**). It is possible intervention may be needed.
 
-- **Stable low cost member**: Currently low-cost (allowed dollars less than **{half_threshold:,.0f}**) and predicted to stay low (predicted allowed dollars are less than **{half_threshold:,.0f}**). No intervention with these members is likely necessary.
+- **Stable low cost member**: Currently low-cost (allowed dollars less than **{half_threshold:,.0f}**) and predicted to stay low (predicted allowed dollars less than **{half_threshold:,.0f}**). No intervention with these members is likely necessary.
 """)
 
 # Define criteria for categorizing claimants based on user-selected threshold
