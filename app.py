@@ -35,31 +35,6 @@ df['predicted_allowed_pmpm'] = df['predicted_allowed_pmpm'].round(0).astype(int)
 df['allowed_dollars'] = df['allowed_pmpm'] * 12
 df['predicted_allowed_dollars'] = df['predicted_allowed_pmpm'] * 12
 
-# Ensure representation in all categories
-# For 'Unavoidable high cost claimant': currently high cost, predicted high cost
-df.loc[0:9, 'allowed_dollars'] = 150000  # High cost now (>100,000)
-df.loc[0:9, 'predicted_allowed_dollars'] = 150000  # Predicted high cost (>100,000)
-
-# For 'Impactable high cost claimant': currently low cost, predicted high cost
-df.loc[10:19, 'allowed_dollars'] = 50000  # Low cost now (≤100,000)
-df.loc[10:19, 'predicted_allowed_dollars'] = 150000  # Predicted high cost (>100,000)
-
-# For 'Wait and See high cost claimant': currently high cost, predicted low cost
-df.loc[20:29, 'allowed_dollars'] = 150000  # High cost now (>100,000)
-df.loc[20:29, 'predicted_allowed_dollars'] = 50000  # Predicted low cost (≤100,000)
-
-# For 'Stable low cost member': currently low cost (<50% of threshold), predicted low cost (<50% of threshold)
-df.loc[30:59, 'allowed_dollars'] = 40000  # Low cost now (<50% of threshold)
-df.loc[30:59, 'predicted_allowed_dollars'] = 40000  # Predicted low cost (<50% of threshold)
-
-# For 'Stable moderate cost member': currently moderate cost (50% to 100% of threshold), predicted moderate cost (50% to 100% of threshold)
-df.loc[60:89, 'allowed_dollars'] = 75000  # Moderate cost now (50% - 100% of threshold)
-df.loc[60:89, 'predicted_allowed_dollars'] = 75000  # Predicted moderate cost
-
-# Recalculate 'allowed_pmpm' and 'predicted_allowed_pmpm'
-df['allowed_pmpm'] = (df['allowed_dollars'] / 12).round(0).astype(int)
-df['predicted_allowed_pmpm'] = (df['predicted_allowed_dollars'] / 12).round(0).astype(int)
-
 # Streamlit application
 st.title('High Cost Claimants')
 
@@ -74,6 +49,36 @@ allowed_dollars_threshold = st.number_input(
 # Convert threshold to integer for consistency
 allowed_dollars_threshold = int(allowed_dollars_threshold)
 half_threshold = allowed_dollars_threshold * 0.5
+
+# Dynamic values based on the user-defined threshold
+high_cost_value = allowed_dollars_threshold  # 100% of the threshold
+low_cost_value = half_threshold  # 50% of the threshold
+moderate_cost_value = (low_cost_value + high_cost_value) / 2  # Midpoint between low and high cost
+
+# Ensure representation in all categories based on dynamic threshold
+# For 'Unavoidable high cost claimant': currently high cost, predicted high cost
+df.loc[0:9, 'allowed_dollars'] = high_cost_value  # High cost now
+df.loc[0:9, 'predicted_allowed_dollars'] = high_cost_value  # Predicted high cost
+
+# For 'Impactable high cost claimant': currently low cost, predicted high cost
+df.loc[10:19, 'allowed_dollars'] = low_cost_value  # Low cost now
+df.loc[10:19, 'predicted_allowed_dollars'] = high_cost_value  # Predicted high cost
+
+# For 'Wait and See high cost claimant': currently high cost, predicted low cost
+df.loc[20:29, 'allowed_dollars'] = high_cost_value  # High cost now
+df.loc[20:29, 'predicted_allowed_dollars'] = low_cost_value  # Predicted low cost
+
+# For 'Stable low cost member': currently low cost, predicted low cost
+df.loc[30:59, 'allowed_dollars'] = low_cost_value  # Low cost now
+df.loc[30:59, 'predicted_allowed_dollars'] = low_cost_value  # Predicted low cost
+
+# For 'Stable moderate cost member': currently moderate cost, predicted moderate cost
+df.loc[60:89, 'allowed_dollars'] = moderate_cost_value  # Moderate cost now
+df.loc[60:89, 'predicted_allowed_dollars'] = moderate_cost_value  # Predicted moderate cost
+
+# Recalculate 'allowed_pmpm' and 'predicted_allowed_pmpm'
+df['allowed_pmpm'] = (df['allowed_dollars'] / 12).round(0).astype(int)
+df['predicted_allowed_pmpm'] = (df['predicted_allowed_dollars'] / 12).round(0).astype(int)
 
 # Add a column for current high cost claimant based on user-defined threshold
 df['current_high_cost_claimant'] = df['allowed_dollars'] > allowed_dollars_threshold
@@ -109,12 +114,12 @@ def categorize_claimant(row):
         if half_threshold <= predicted_allowed <= allowed_dollars_threshold:
             return 'Stable moderate cost member'
         else:
-            return 'Other'
+            return 'Impactable high cost claimant'
     elif current_allowed < half_threshold:
         if predicted_allowed < half_threshold:
             return 'Stable low cost member'
         else:
-            return 'Impactable high cost claimant'
+            return 'Impactable moderate cost claimant'
     else:
         return 'Other'
 
