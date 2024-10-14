@@ -55,26 +55,30 @@ high_cost_value = allowed_dollars_threshold  # 100% of the threshold
 low_cost_value = half_threshold  # 50% of the threshold
 moderate_cost_value = (low_cost_value + high_cost_value) / 2  # Midpoint between low and high cost
 
-# Ensure representation in all categories based on dynamic threshold
+# Ensure at least 10% of members are represented in each category based on dynamic threshold
 # For 'Unavoidable high cost claimant': currently high cost, predicted high cost
-df.loc[0:9, 'allowed_dollars'] = high_cost_value  # High cost now
-df.loc[0:9, 'predicted_allowed_dollars'] = high_cost_value  # Predicted high cost
+df.loc[0:9, 'allowed_dollars'] = high_cost_value + np.random.randint(1000, 5000, size=10)  # High cost now
+df.loc[0:9, 'predicted_allowed_dollars'] = high_cost_value + np.random.randint(1000, 5000, size=10)  # Predicted high cost
 
 # For 'Impactable high cost claimant': currently low cost, predicted high cost
-df.loc[10:19, 'allowed_dollars'] = low_cost_value  # Low cost now
-df.loc[10:19, 'predicted_allowed_dollars'] = high_cost_value  # Predicted high cost
+df.loc[10:19, 'allowed_dollars'] = low_cost_value - np.random.randint(1000, 5000, size=10)  # Low cost now
+df.loc[10:19, 'predicted_allowed_dollars'] = high_cost_value + np.random.randint(1000, 5000, size=10)  # Predicted high cost
 
 # For 'Wait and See high cost claimant': currently high cost, predicted low cost
-df.loc[20:29, 'allowed_dollars'] = high_cost_value  # High cost now
-df.loc[20:29, 'predicted_allowed_dollars'] = low_cost_value  # Predicted low cost
+df.loc[20:29, 'allowed_dollars'] = high_cost_value + np.random.randint(1000, 5000, size=10)  # High cost now
+df.loc[20:29, 'predicted_allowed_dollars'] = low_cost_value - np.random.randint(1000, 5000, size=10)  # Predicted low cost
 
 # For 'Stable low cost member': currently low cost, predicted low cost
-df.loc[30:59, 'allowed_dollars'] = low_cost_value  # Low cost now
-df.loc[30:59, 'predicted_allowed_dollars'] = low_cost_value  # Predicted low cost
+df.loc[30:49, 'allowed_dollars'] = low_cost_value - np.random.randint(1000, 5000, size=20)  # Low cost now
+df.loc[30:49, 'predicted_allowed_dollars'] = low_cost_value - np.random.randint(1000, 5000, size=20)  # Predicted low cost
 
 # For 'Stable moderate cost member': currently moderate cost, predicted moderate cost
-df.loc[60:89, 'allowed_dollars'] = moderate_cost_value  # Moderate cost now
-df.loc[60:89, 'predicted_allowed_dollars'] = moderate_cost_value  # Predicted moderate cost
+df.loc[50:69, 'allowed_dollars'] = moderate_cost_value + np.random.randint(1000, 5000, size=20)  # Moderate cost now
+df.loc[50:69, 'predicted_allowed_dollars'] = moderate_cost_value + np.random.randint(1000, 5000, size=20)  # Predicted moderate cost
+
+# For 'Impactable moderate cost claimant': currently low cost, predicted moderate cost
+df.loc[70:89, 'allowed_dollars'] = low_cost_value - np.random.randint(1000, 5000, size=20)  # Low cost now
+df.loc[70:89, 'predicted_allowed_dollars'] = moderate_cost_value + np.random.randint(1000, 5000, size=20)  # Predicted moderate cost
 
 # Recalculate 'allowed_pmpm' and 'predicted_allowed_pmpm'
 df['allowed_pmpm'] = (df['allowed_dollars'] / 12).round(0).astype(int)
@@ -94,6 +98,8 @@ Below is a high-cost claimant prediction demo. We predict the allowed dollars fo
 - **Unavoidable high cost claimant**: Currently high-cost (allowed dollars greater than **{allowed_dollars_threshold:,.0f}**) and predicted to stay high-cost (predicted allowed dollars greater than **{allowed_dollars_threshold:,.0f}**). Users may target these members for case management or "laser" them in stop loss.
 
 - **Impactable high cost claimant**: Currently low-cost (allowed dollars less than or equal to **{allowed_dollars_threshold:,.0f}**) but predicted to become high-cost in the future (predicted allowed dollars greater than **{allowed_dollars_threshold:,.0f}**). Users may want to target these members as they could become high-cost claimants.
+
+- **Impactable moderate cost claimant**: Currently low-cost (allowed dollars less than **{half_threshold:,.0f}**) but predicted to become moderate-cost in the future (predicted allowed dollars greater than **{half_threshold:,.0f}** and less than **{allowed_dollars_threshold:,.0f}**).
 
 - **Stable moderate cost member**: Currently moderate-cost (allowed dollars between **{half_threshold:,.0f}** and **{allowed_dollars_threshold:,.0f}**) and predicted to stay moderate (predicted allowed dollars between **{half_threshold:,.0f}** and **{allowed_dollars_threshold:,.0f}**). It is possible intervention may be needed.
 
@@ -119,7 +125,9 @@ def categorize_claimant(row):
         if predicted_allowed < half_threshold:
             return 'Stable low cost member'
         else:
-            return 'Impactable moderate cost claimant'
+            if predicted_allowed <= allowed_dollars_threshold:
+                return 'Impactable moderate cost claimant'
+            return 'Impactable high cost claimant'
     else:
         return 'Other'
 
@@ -133,7 +141,8 @@ chronic_condition = st.selectbox('Select Chronic Condition (optional)', options=
 # Select high cost category
 high_cost_categories = [
     'Wait and See high cost claimant', 'Unavoidable high cost claimant',
-    'Impactable high cost claimant', 'Stable low cost member', 'Stable moderate cost member'
+    'Impactable high cost claimant', 'Impactable moderate cost claimant',
+    'Stable low cost member', 'Stable moderate cost member'
 ]
 high_cost_category = st.selectbox('Select High Cost Category', options=high_cost_categories)
 
